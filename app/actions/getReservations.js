@@ -25,22 +25,29 @@ async function getReservation(params) {
     const db = await dbConnect();
 
     // Fetch reservations based on the query
-    const reservations = await db.collection("reservations").find(query).toArray();
+    const reservations = await db.collection("Reservation").find(query).toArray();
 
     // Log the raw reservation data
     console.log("Reservations from DB:", reservations);
 
-    const safeReservations = reservations.map((reservation) => ({
-      ...reservation,
-      createdAt: reservation.createdAt.toISOString(),
-      startDate: reservation.startDate.toISOString(),
-      endDate: reservation.endDate.toISOString(),
-      listing: {
-        ...(reservation.listing || {}), // Ensure listing is defined
-        createdAt: reservation.listing?.createdAt.toISOString(),
-      },
-    }));
-
+    const safeReservations = reservations.map((reservation) => {
+      return {
+        ...reservation,
+        _id: reservation._id.toString(),
+        userId: reservation.userId?.toString(),
+        listingId: reservation.listingId?.toString(),
+        createdAt: reservation.createdAt ? new Date(reservation.createdAt).toISOString() : null,
+        startDate: reservation.startDate ? new Date(reservation.startDate).toISOString() : null,
+        endDate: reservation.endDate ? new Date(reservation.endDate).toISOString() : null,
+        listing: {
+          ...(reservation.listing || {}),
+          userId: reservation.listing?.userId?.toString(),
+          createdAt: reservation.listing?.createdAt ? new Date(reservation.listing.createdAt).toISOString() : null,
+        },
+      };
+    });
+    
+    
     return safeReservations;
   } catch (error) {
     throw new Error(error.message);
