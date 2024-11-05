@@ -1,4 +1,4 @@
-import connectToDatabase from "@/lib/mongodb"; // Adjust the import path as necessary
+import dbConnect from "@/lib/mongooseClient"; // Adjust the import path as necessary
 
 export default async function getListings(params) {
   try {
@@ -66,14 +66,17 @@ export default async function getListings(params) {
       };
     }
 
-    const db = await connectToDatabase();
-    const listingsCollection = db.collection("listings"); // Replace with your actual collection name
+    const db = await dbConnect();
+    const listingsCollection = db.collection("Listing"); // Replace with your actual collection name
 
     const listings = await listingsCollection.find(query).sort({ createdAt: -1 }).toArray();
 
+    // Convert listings to plain objects
     const safeListings = listings.map((list) => ({
       ...list,
-      createdAt: list.createdAt.toISOString(),
+      _id: list._id.toString(), // Convert ObjectId to string
+      createdAt: list.createdAt.toISOString(), // Convert Date to ISO string
+      // Optionally convert other nested or complex fields if necessary
     }));
 
     return safeListings;

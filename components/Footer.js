@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import ClientOnly from "./ClientOnly";
 import FooterColumn from "@/components/FooterColumn";

@@ -1,10 +1,6 @@
-import { MongoClient } from "mongodb";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import dbConnect from "@/lib/mongooseClient"; // Adjust the path as necessary
-
-const uri = process.env.MONGODB_URI; // Use process.env for environment variables
-const client = new MongoClient(uri);
 
 export async function getSession() {
   return await getServerSession(authOptions);
@@ -18,10 +14,9 @@ export default async function getCurrentUser() {
       return null;
     }
 
-    await dbConnect(); // Connect to the database using the dbConnect function
-
-    const database = client.db("your_database_name"); // replace with your database name
-    const usersCollection = database.collection("users"); // replace with your collection name
+    // Connect to the database using the dbConnect function
+    const db = await dbConnect(); // dbConnect already handles the connection
+    const usersCollection = db.collection("users"); // Use the connected db instance
 
     const currentUser = await usersCollection.findOne({
       email: session.user.email,
@@ -31,15 +26,19 @@ export default async function getCurrentUser() {
       return null;
     }
 
+    /* // Log currentUser to inspect its structure
+      console.log("Current User:", currentUser); */
+
+    // Convert ObjectId to string and format dates
     return {
-      ...currentUser,
-      createdAt: currentUser.createdAt.toISOString(),
-      updatedAt: currentUser.updatedAt.toISOString(),
+      _id: currentUser._id.toString(), // Convert ObjectId to string
+      email: currentUser.email,
+      name: currentUser.name,
+      createdAt: currentUser.createdAt ? currentUser.createdAt.toISOString() : null,
+      updatedAt: currentUser.updatedAt ? currentUser.updatedAt.toISOString() : null,
       emailVerified: currentUser.emailVerified ? currentUser.emailVerified.toISOString() : null,
     };
   } catch (error) {
     console.log("Error in getCurrentUser:", error);
-  } finally {
-    // Do not close the client here, manage connections in dbConnect instead
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import useRegisterModal from "@/hook/useRegisterModal";
+import useLoginModal from "@/hook/useLoginModal";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
