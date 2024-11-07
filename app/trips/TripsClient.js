@@ -41,7 +41,7 @@ function TripsClient({ reservations, currentUser }) {
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
                 {reservations.map((reservation) => (
                     <ListingCard
-                        key={reservation.id}
+                        key={reservation._id} // Make sure the key is unique
                         data={reservation.listing}
                         reservation={reservation}
                         actionId={reservation.id}
@@ -49,6 +49,7 @@ function TripsClient({ reservations, currentUser }) {
                         disabled={deletingId === reservation.id}
                         actionLabel="Cancel reservation"
                         currentUser={currentUser}
+                        showConfirmation={reservation.status === 'confirmed'} // Pass status to ListingCard
                     />
                 ))}
             </div>

@@ -18,6 +18,7 @@ function ListingCard({
   confirmLabel = "Confirm",
   actionId = "",
   currentUser,
+  showConfirmation,
 }) {
   const router = useRouter();
   const { getByValue } = useCountries();
@@ -68,6 +69,12 @@ function ListingCard({
           <div className="absolute top-3 right-3">
             <HeartButton listingId={data.id} currentUser={currentUser} />
           </div>
+          {/* Show confirmation icon if the reservation is confirmed */}
+          {showConfirmation && (
+                        <div className="absolute top-3 left-3 bg-green-500 text-white p-2 rounded-full">
+                            ✔️
+                        </div>
+                    )}
         </div>
         <div className="font-semibold text-lg">
           {location?.region}, {location?.label}
@@ -92,6 +99,7 @@ function ListingCard({
               disabled={disabled}
               small
               label={confirmLabel}
+              className="border-green-500 bg-green-500 text-white hover:bg-green-600"
               onClick={handleConfirm}
             />
           )}
