@@ -12,7 +12,8 @@ import ListingCard from "@/components/listing/ListingCard";
 function ReservationsClient({ reservations, currentUser }) {
     const router = useRouter();
     const [deletingId, setDeletingId] = useState("");
-    const [activeTab, setActiveTab] = useState("upcoming"); // Track active tab
+    const [confirmingId, setConfirmingId] = useState(""); // Track confirming status
+    const [activeTab, setActiveTab] = useState("upcoming");
 
     const onCancel = useCallback(
         (id) => {
@@ -34,7 +35,26 @@ function ReservationsClient({ reservations, currentUser }) {
         [router]
     );
 
-    // Determine the filtered reservations based on active tab
+    const onConfirm = useCallback(
+        (id) => {
+            setConfirmingId(id);
+
+            axios
+                .put(`/api/reservations/${id}/confirm`) // Adjust API endpoint if needed
+                .then(() => {
+                    toast.success("Reservation confirmed");
+                    router.refresh();
+                })
+                .catch((error) => {
+                    toast.error(error?.response?.data?.error);
+                })
+                .finally(() => {
+                    setConfirmingId("");
+                });
+        },
+        [router]
+    );
+
     const now = new Date();
     const filteredReservations = reservations.filter((reservation) => {
         const reservationDate = new Date(reservation.startDate);
@@ -47,31 +67,29 @@ function ReservationsClient({ reservations, currentUser }) {
         <Container>
             <Heading title="Reservations" subtitle="Bookings on your properties" />
 
-            {/* Tabs for Upcoming and Past reservations */}
             <div className="mt-4 flex justify-center">
-    <button
-        onClick={() => setActiveTab("upcoming")}
-        className={`px-4 py-2 mr-2 font-semibold rounded-lg ${
-            activeTab === "upcoming"
-                ? "bg-[#FF5A5F] text-white"
-                : "bg-gray-200 text-gray-700"
-        }`}
-    >
-        Upcoming
-    </button>
-    <button
-        onClick={() => setActiveTab("past")}
-        className={`px-4 py-2 font-semibold rounded-lg ${
-            activeTab === "past"
-                ? "bg-[#FF5A5F] text-white"
-                : "bg-gray-200 text-gray-700"
-        }`}
-    >
-        Past
-    </button>
-</div>
+                <button
+                    onClick={() => setActiveTab("upcoming")}
+                    className={`px-4 py-2 mr-2 font-semibold rounded-lg ${
+                        activeTab === "upcoming"
+                            ? "bg-[#FF5A5F] text-white"
+                            : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                    Upcoming
+                </button>
+                <button
+                    onClick={() => setActiveTab("past")}
+                    className={`px-4 py-2 font-semibold rounded-lg ${
+                        activeTab === "past"
+                            ? "bg-[#FF5A5F] text-white"
+                            : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                    Past
+                </button>
+            </div>
 
-            {/* Grid of filtered reservations */}
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
                 {filteredReservations.map((reservation) => (
                     <ListingCard
@@ -80,8 +98,13 @@ function ReservationsClient({ reservations, currentUser }) {
                         reservation={reservation}
                         actionId={reservation._id.toString()}
                         onAction={onCancel}
-                        disabled={deletingId === reservation._id.toString()}
+                        confirmAction={onConfirm} // Pass confirmAction
+                        disabled={
+                            deletingId === reservation._id.toString() ||
+                            confirmingId === reservation._id.toString()
+                        }
                         actionLabel="Cancel reservation"
+                        confirmLabel="Confirm reservation" // Confirm button label
                         currentUser={currentUser}
                     />
                 ))}

@@ -12,8 +12,10 @@ function ListingCard({
   data,
   reservation,
   onAction,
+  confirmAction,
   disabled,
   actionLabel,
+  confirmLabel = "Confirm",
   actionId = "",
   currentUser,
 }) {
@@ -30,7 +32,18 @@ function ListingCard({
     [onAction, actionId, disabled]
   );
 
-  const price = useMemo(() => (reservation ? reservation.totalPrice : data.price), [reservation, data.price]);
+  const handleConfirm = useCallback(
+    (e) => {
+      e.stopPropagation();
+      if (!disabled) confirmAction?.(actionId);
+    },
+    [confirmAction, actionId, disabled]
+  );
+
+  const price = useMemo(
+    () => (reservation ? reservation.totalPrice : data.price),
+    [reservation, data.price]
+  );
 
   const reservationDate = useMemo(() => {
     if (!reservation) return null;
@@ -65,14 +78,24 @@ function ListingCard({
         <div className="flex flex-row items-center gap-1 font-semibold">
           ${price} {!reservation && <span className="font-light">Night</span>}
         </div>
-        {onAction && actionLabel && (
-          <Button
-            disabled={disabled}
-            small
-            label={actionLabel}
-            onClick={handleCancel}
-          />
-        )}
+        <div className="flex gap-2">
+          {onAction && actionLabel && (
+            <Button
+              disabled={disabled}
+              small
+              label={actionLabel}
+              onClick={handleCancel}
+            />
+          )}
+          {confirmAction && confirmLabel && (
+            <Button
+              disabled={disabled}
+              small
+              label={confirmLabel}
+              onClick={handleConfirm}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
