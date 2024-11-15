@@ -1,4 +1,4 @@
-import dbConnect from "@/lib/mongoClient"; // Adjust the import path to your MongoDB client connection
+import dbConnect from "@/lib/mongooseClient"; // Adjust the import path to your MongoDB client connection
 import getCurrentUser from "./getCurrentUser";
 
 export default async function getFavoriteListings() {
