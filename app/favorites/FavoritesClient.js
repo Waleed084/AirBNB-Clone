@@ -1,8 +1,30 @@
+"use client";
+import { useEffect, useState } from "react";
 import Container from "@/components/Container";
 import Heading from "@/components/Heading";
 import ListingCard from "@/components/listing/ListingCard";
 
-function FavoritesClient({ listings, currentUser }) {
+function FavoritesClient({ currentUser }) {
+  const [listings, setListings] = useState([]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const response = await fetch("/api/favorites");
+        if (response.ok) {
+          const data = await response.json();
+          setListings(data);
+        } else {
+          console.error("Failed to fetch favorites.");
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    };
+
+    fetchFavorites();
+  }, [currentUser]);
+
   return (
     <Container>
       <Heading title="Favorites" subtitle="List of places you favorites!" />

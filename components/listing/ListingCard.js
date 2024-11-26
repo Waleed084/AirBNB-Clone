@@ -67,7 +67,7 @@ function ListingCard({
             alt="listing"
           />
           <div className="absolute top-3 right-3">
-            <HeartButton listingId={data.id} currentUser={currentUser} />
+            <HeartButton listingId={data._id} currentUser={currentUser} />
           </div>
           {/* Show confirmation icon if the reservation is confirmed */}
           {showConfirmation && (

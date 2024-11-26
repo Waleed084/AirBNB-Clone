@@ -1,45 +1,41 @@
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
-import { toast } from "react-toastify";
-import useLoginModal from "./useLoginModal";
+import { useState, useEffect } from "react";
 
-function useFavorite({ listingId, currentUser }) {
-  const router = useRouter();
-  const loginModal = useLoginModal();
+const useFavorite = ({ listingId, currentUser }) => {
+  const [hasFavorite, setHasFavorite] = useState(false);
 
-  const hasFavorite = useMemo(() => {
-    const list = currentUser?.favoriteIds || [];
-    return list.includes(listingId);
+  useEffect(() => {
+    if (currentUser?.favoriteIds?.includes(listingId)) {
+      setHasFavorite(true); // Set to true if the listing is in the user's favorites
+    }
   }, [currentUser, listingId]);
 
-  const toggleFavorite = useCallback(
-    async (e) => {
-      e.stopPropagation();
+  const toggleFavorite = async () => {
+    try {
+      const response = await fetch("/api/favorites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listingId }),
+      });
 
-      if (!currentUser) {
-        return loginModal.onOpen();
+      // Check for response status and log it for debugging
+      if (!response.ok) {
+        const errorResponse = await response.json();  // Get the response body as JSON
+        console.error("Error response:", errorResponse); // Log the response error
+        console.error("Failed to update favorite. Status Code:", response.status);
+        return;
       }
 
-      try {
-        const request = hasFavorite
-          ? () => axios.delete(`/api/favorites/${listingId}`)
-          : () => axios.post(`/api/favorites/${listingId}`);
-
-        await request();
-        router.refresh();
-        toast.success("Success");
-      } catch (error) {
-        toast.error("Something Went Wrong");
-      }
-    },
-    [currentUser, hasFavorite, listingId, loginModal, router]
-  );
-
-  return {
-    hasFavorite,
-    toggleFavorite,
+      // If request was successful, toggle the favorite status
+      setHasFavorite(!hasFavorite);
+    } catch (error) {
+      console.error("Error toggling favorite:", error); // Log general error if any
+    }
   };
-}
+
+  // Return only the primitive values
+  return { hasFavorite, toggleFavorite };
+};
 
 export default useFavorite;

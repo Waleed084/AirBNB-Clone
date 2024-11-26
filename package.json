@@ -16,6 +16,7 @@
     "leaflet": "^1.9.4",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.0",
+    "net": "^1.0.2",
     "next": "15.0.2",
     "next-auth": "^4.24.10",
     "next-cloudinary": "^6.16.0",

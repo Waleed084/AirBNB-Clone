@@ -66,7 +66,7 @@ console.log("Listing ID is:",listing._id)
       .finally(() => {
         setIsLoading(false);
       });
-  }, [totalPrice, selectedDate, listing.id, listing.crewCount, startTime, endTime, router, currentUser, loginModal]);
+  }, [totalPrice, selectedDate, listing._id, listing.crewCount, startTime, endTime, router, currentUser, loginModal]);
 
   const calculateHours = (start, end) => {
     const [startHour, startMinute] = start.split(":").map(Number);
