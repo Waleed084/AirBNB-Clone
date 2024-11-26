@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Range } from "react-date-range";
 import Calendar from "../inputs/Calendar"; // Assuming Calendar component exists for date selection
 import Button from "../Button";
 
@@ -22,7 +21,6 @@ function ListingReservation({
   const [showCalendar, setShowCalendar] = useState(false); // To toggle calendar display
   const [selectedCrew, setSelectedCrew] = useState(crewCount);
   const [hours, setHours] = useState(0);
-  const [dateRange, setDateRange] = useState(new Date()); // Handle both single and range
   const [selectedDate, setSelectedDate] = useState(""); // New state for the selected date
 
   // Handle time input changes
@@ -44,18 +42,18 @@ function ListingReservation({
 
   // Handle date change from the Calendar component
   const handleDateChange = (value) => {
-    setDateRange(value); // Update state with the new date or range
-  
-    // Handle single date or range
-    const formattedDate = value instanceof Date
-      ? value.toLocaleDateString() // If it's a single Date, format it
-      : `${value.startDate?.toLocaleDateString()} - ${value.endDate?.toLocaleDateString()}`; // If it's a range, format the start and end dates
-  
-    setSelectedDate(formattedDate); // Set the formatted date
-    onChangeDate(value); // Pass the selected date or range to the parent component
+    // Treat value as a single date
+    if (value instanceof Date) {
+      const formattedDate = value.toLocaleDateString();
+      setSelectedDate(formattedDate);
+
+      // Use value directly as startDate
+      onChangeDate({ startDate: value });
+    }
+
     setShowCalendar(false); // Close calendar after selection
   };
-  
+
   // Calculate total hours based on start and end times
   useEffect(() => {
     if (startTime && endTime) {
@@ -90,8 +88,8 @@ function ListingReservation({
           {showCalendar && (
             <div className="mt-2 z-10">
               <Calendar
-                mode="single" // Set to "single" or "multiple" based on the desired functionality
-                value={dateRange} // Pass current date or range
+                mode="single" // Ensure it's set to single date selection
+                value={selectedDate ? new Date(selectedDate) : null} // Pass selected date
                 onChange={handleDateChange} // Handle date change
                 disabledDates={disabledDates} // Disabled dates from props
               />

@@ -1,5 +1,6 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import dbConnect from "@/lib/mongooseClient"; // Import your MongoDB connection function
+const { ObjectId } = require('mongodb');
+import dbConnect from "@/lib/mongooseClient";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
@@ -32,35 +33,54 @@ export async function POST(request) {
   try {
     await dbConnect(); // Ensure the database connection is established
     const db = await dbConnect();
-    const listingsCollection = db.collection("listings"); // Adjust collection name as necessary
+    const reservationsCollection = db.collection("Reservation");
 
-    // Update the listing to add a reservation
-    const reservation = await listingsCollection.findOneAndUpdate(
-      { _id: listingId }, // Use MongoDB's _id field for the listing
-      {
-        $push: {
-          reservations: {
-            userId: currentUser.id,
-            startDate: startDateTime,
-            endDate: endDateTime,
-            startTime, // Store time as string
-            endTime,   // Store time as string
-            totalHours, // Store total hours
-            crewCount,
-            totalPrice,
-          },
-        },
-      },
-      { returnOriginal: false, upsert: false } // Return the updated document, do not insert if not found
-    );
+    // Fetch listing details for embedding in reservation
+    const listingsCollection = db.collection("Listing");
+    const listing = await listingsCollection.findOne({ _id: new ObjectId(listingId) });
 
-    if (!reservation.value) {
-      console.error("Reservation creation failed: Listing not found.");
+    if (!listing) {
+      console.error("Listing not found.");
       return NextResponse.error();
     }
 
-    console.log("Reservation created successfully:", reservation.value);
-    return NextResponse.json(reservation.value); // Return the updated listing with new reservation
+    // Structure the reservation data as requested
+    const reservationData = {
+      userId: currentUser._id,
+      listingId: listingId,
+      startDate: startDateTime.toISOString(),
+      endDate: endDateTime.toISOString(),
+      startTime,
+      endTime,
+      totalHours,
+      crewCount,
+      totalPrice,
+      createdAt: new Date().toISOString(),
+      listing: {
+        id: listing._id,
+        title: listing.title,
+        description: listing.description,
+        imageSrc: listing.imageSrc,
+        category: listing.category,
+        roomCount: listing.roomCount,
+        bathroomCount: listing.bathroomCount,
+        guestCount: listing.guestCount,
+        locationValue: listing.locationValue,
+        minimumBookingLength: listing.minimumBookingLength,
+        crewCount: listing.crewCount,
+        area: listing.area,
+        userId: listing.userId,
+        price: listing.price,
+        createdAt: listing.createdAt,
+      },
+      status: "confirmed",
+    };
+
+    // Insert the reservation into the Reservation collection
+    const result = await reservationsCollection.insertOne(reservationData);
+
+    console.log("Reservation created successfully:", result);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error creating reservation:", error);
     return NextResponse.error();
