@@ -29,9 +29,11 @@
         if (!user.favorites) {
           user.favorites = [];
         }
-  
-        // Update favorite listings
-        user.favorites.push(favoriteListingId);
+  // Update favorite listings if not already in favorites
+  if (!user.favorites.includes(favoriteListingId)) {
+    user.favorites.push(favoriteListingId); // Add the listing to favorites
+  }
+       
         
         // Save the updated user data
         await user.save();  // This should save the changes now

@@ -21,10 +21,9 @@ const useFavorite = ({ listingId, currentUser }) => {
 
       // Check for response status and log it for debugging
       if (!response.ok) {
-        const errorResponse = await response.json();  // Get the response body as JSON
-        console.error("Error response:", errorResponse); // Log the response error
-        console.error("Failed to update favorite. Status Code:", response.status);
-        return;
+          const errorResponse = await response.text(); // Use .text() to check the raw response
+          console.error("Error response:", errorResponse);
+          return; 
       }
 
       // If request was successful, toggle the favorite status
